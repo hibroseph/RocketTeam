@@ -6,9 +6,7 @@
 # Author: Joseph Ridgley
 # Date: 5/30/18
 # TODO
-# Add X Y Z AXIS INFORMATION TO CSV FILE
-# Update date on raspberry pi
-# Calibrate pressure sensor
+# Create way to activate pi by the joystick on the senseHAT
 
 import time
 import datetime
@@ -35,14 +33,18 @@ file = open("/home/pi/RocketTeam/SenseHAT/Sensor Readings" + str(datetime.dateti
 # Header of the CSV file
 file.write("Test Date: " + str(datetime.datetime.now().date()) + "\n")
 file.write("Test Duration (s): " + str(lengthOfTest) + "\n\n")
-file.write("Time Stamp, Pressure (PSI),,Time Stamp, X (rads/s), Y (rads/s) , Z (rads/s),,Time Stamp, Pitch (degrees), Roll (degrees), Yaw (degrees)\n")
+file.write("Time Stamp (Pressure), Pressure (PSI),," + 
+		   "Time Stamp (Gyroscope RAW), X (rads/s), Y (rads/s) , Z (rads/s),," +
+		   "Time Stamp (Gyroscope), Pitch (degrees), Roll (degrees), Yaw (degrees),," +
+		   "Time Stamp (Accelerometer RAW), Pitch (G's), Roll (G's), Yaw '(G's),," +
+		   "Time Stamp (Accelerometer), X (Degrees), Y (Degrees), Z (Degrees)\n")
 
 # Get a start time for the test
 start = time.time()
 
 # set lengthOfTest to 1 second just for example
 # REMOVE BEFORE ACTUALLY USING
-lengthOfTest = 1
+# lengthOfTest = 1
 
 # Activate the gyro, disables the compass and accelerometer
 sense.set_imu_config(False, True, False)
@@ -57,10 +59,18 @@ while time.time() - start < lengthOfTest:
 	rawGYRO = sense.get_gyroscope_raw()
 	gyro = sense.get_gyroscope()
 
+	rawAccel = sense.get_accelerometer_raw();
+	accel = sense.get_accelerometer();
+
 	now = time.time() - start
-	file.write(str(now) + "," + str(pressure) + ",," 
-		+ str(now) + "," +  str(rawGYRO.get("x")) + "," + str(rawGYRO.get("y")) + "," + str(rawGYRO.get("z")) + ",," +
-		str(now) + "," + str(gyro.get("pitch")) + "," + str(gyro.get("roll")) + str(gyro.get("yaw")))
+	file.write(str(now) + "," + str(pressure) + ",," +
+		str(now) + "," +  str(rawGYRO.get("x")) + "," + str(rawGYRO.get("y")) + "," + str(rawGYRO.get("z")) + ",," +
+		str(now) + "," + str(gyro.get("pitch")) + "," + str(gyro.get("roll")) + "," + str(gyro.get("yaw")) + ",," +
+		str(now) + "," + str(rawAccel.get("x")) + "," + str(rawAccel.get("y")) + "," + str(rawAccel.get("z")) + ",," +
+		str(now) + "," + str(accel.get("pitch")) + "," + str(accel.get("roll")) + "," + str(accel.get("yaw")) +  '\n')
 
 	# force the file to be saved right away, WE DONT WANNA LOOSE DATA
 	os.fsync(file)
+
+	# sleep for half a second
+	time.sleep(.500)

@@ -12,19 +12,27 @@ import time
 import datetime
 import os
 
-from sense_hat import SenseHat
+from sense_hat import SenseHat, ACTION_HELD, ACTION_RELEASED
 
 # Declare a SenseHat instance
 sense = SenseHat()
 
-# Turn the LED Matrix off
-sense.clear()
+def pushed_down(event):
+	if event.action == ACTION_RELEASED:
+		sense.clear()
 
+#sense.clear()
+# wait for the joystick to be pressed down
+sense.stick.wait_for_event()
+
+# Let's show a letter on the LED Matrix to show that the program is running
+sense.show_letter("R")
 
 # Ask the user how long they would like to run the program
-lengthOfTest = int(input("How long is this test? (in Minutes): "))
+#lengthOfTest = int(input("How long is this test? (in Minutes): "))
 
 # Convert the length of the test to seconds
+lengthOfTest = 5;
 lengthOfTest *= lengthOfTest * 60
 
 # open CSV file
@@ -41,10 +49,6 @@ file.write("Time Stamp (Pressure), Pressure (PSI),," +
 
 # Get a start time for the test
 start = time.time()
-
-# set lengthOfTest to 1 second just for example
-# REMOVE BEFORE ACTUALLY USING
-# lengthOfTest = 1
 
 # Activate the gyro, disables the compass and accelerometer
 sense.set_imu_config(False, True, False)
@@ -72,5 +76,8 @@ while time.time() - start < lengthOfTest:
 	# force the file to be saved right away, WE DONT WANNA LOOSE DATA
 	os.fsync(file)
 
+	# See if someone clicked the joystick in the down position
+	sense.stick.direction_down = pushed_down
+	
 	# sleep for half a second
 	time.sleep(.500)
